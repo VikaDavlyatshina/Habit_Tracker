@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from datetime import timedelta
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,6 +31,7 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 DEBUG = True if os.getenv("DEBUG") == "True" else False
 
 # Разрешенные хосты
+# Какие домены/IP могут обращаться к сайту
 ALLOWED_HOSTS = ['*']
 
 
@@ -43,8 +46,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
      # Сторонние библиотеки
     'rest_framework',
+    'rest_framework_simplejwt',
+    'django_filters',
+    'django_celery_beat',
+    'drf_spectacular',
     # Приложения проекта
     'habits',
+    'users'
 ]
 
 MIDDLEWARE = [
@@ -86,8 +94,8 @@ DATABASES = {
         "NAME": os.getenv("DB_NAME"),  # Имя нашей базы
         "USER": os.getenv("DB_USER"),  # Имя пользователя PostgreSQL
         "PASSWORD": os.getenv("DB_PASSWORD"),  # Пароль пользователя PostgreSQL
-        "HOST": os.getenv("HOST"),
-        "PORT": os.getenv("PORT"),
+        "HOST": os.getenv("DB_HOST"),
+        "PORT": os.getenv("DB_PORT"),
     }
 }
 
@@ -97,16 +105,20 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
+        # Нельзя использовать логин/email как часть пароля
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
+        # Минимальная длина пароля (по умолчанию 8 символов)
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
+        # Запрещает популярные пароли (qwerty, 123456, password)
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
+        # Запрещает пароли, состоящие только из цифр (12345678)
     },
 ]
 
@@ -114,19 +126,134 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/6.0/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+# Язык интерфейса (кнопки, надписи в админке)
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'Europe/Moscow'
+# Часовой пояс (влияет на auto_now_add, даты в админке)
+TIME_ZONE = "Europe/Moscow"
 
+# Интернационализация (переводы на другие языки)
 USE_I18N = True
 
+# Использовать часовые пояса (хранить время в UTC, показывать в локальном)
 USE_TZ = True
 
+# ============================================
+# СТАТИЧЕСКИЕ И МЕДИА ФАЙЛЫ
+# ============================================
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+# URL для доступа к статике (CSS, JS, картинки сайта)
+STATIC_URL = "static/"
 
+# Папка, куда collectstatic собирает ВСЮ статику для продакшена
+# После деплоя запустить: python manage.py collectstatic
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+
+# URL для доступа к медиа-файлам (загруженные пользователем файлы)
 MEDIA_URL = "media/"
+
+# Папка, где хранятся загруженные пользователями файлы
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+# ТИП ПОЛЯ ПО УМОЛЧАНИЮ ДЛЯ ПЕРВИЧНЫХ КЛЮЧЕЙ
+DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ============================================
+# КАСТОМНАЯ МОДЕЛЬ ПОЛЬЗОВАТЕЛЯ
+# ============================================
+
+# Вместо стандартной модели User используется своя (users.User)
+# Позволяет добавить свои поля (телефон, аватар, дата рождения)
+AUTH_USER_MODEL = "users.User"
+
+
+# ============================================
+# DJANGO REST FRAMEWORK
+# ============================================
+REST_FRAMEWORK = {
+    # Фильтрация по умолчанию (поиск и сортировка в API)
+    "DEFAULT_FILTER_BACKENDS": ("django_filters.rest_framework.DjangoFilterBackend",),
+    # Способ аутентификации через JWT-токены (вместо сессий/куки)
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+
+    # Доступ по умолчанию: только авторизованные пользователи
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    # Генератор OpenAPI-схемы для автодокументации
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+}
+
+# ============================================
+# JWT (JSON Web Token)
+# ============================================
+
+SIMPLE_JWT = {
+    # Access-токен: короткий (30 минут), передаётся с каждым запросом
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+
+    # Refresh-токен: длинный (1 день), нужен чтобы получить новый access
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+
+    # Тип токена в заголовке: Authorization: Bearer <токен>
+    "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+
+# ============================================
+# НАСТРОЙКИ ДОКУМЕНТАЦИИ API (Swagger/OpenAPI)
+# ============================================
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Habit Tracker API",                          # Название API
+    "DESCRIPTION": "API для управления привычками",  # Описание
+    "VERSION": "1.0.0",                          # Версия API
+    "SERVE_INCLUDE_SCHEMA": False,               # Не показывать схему в ответах API
+}
+
+# ============================================
+# REDIS (брокер для Celery)
+# ============================================
+REDIS_HOST = os.getenv("REDIS_HOST")
+REDIS_PORT = os.getenv("REDIS_PORT")
+REDIS_DB = os.getenv("REDIS_DB")
+
+# ============================================
+# CELERY
+# ============================================
+# Куда класть задачи (брокер)
+CELERY_BROKER_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
+
+# Где хранить результаты выполнения (бэкенд)
+CELERY_RESULT_BACKEND = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
+
+# Часовой пояс для задач
+CELERY_TIMEZONE = TIME_ZONE
+
+# Логировать начало каждой задачи
+CELERY_TASK_TRACK_STARTED = True
+
+# Максимальное время выполнения задачи (30 минут)
+CELERY_TASK_TIME_LIMIT = 30 * 60
+
+# Планировщик для периодических задач (хранит расписание в БД)
+CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
+
+# ============================================
+# РАСПИСАНИЕ ПЕРИОДИЧЕСКИХ ЗАДАЧ (CELERY BEAT)
+# ============================================
+
+# Настройка расписания задачи
+CELERY_BEAT_SCHEDULE = {
+    # Проверяем привычки каждую минуту
+    'check-habits-every-minute': {
+        'task': 'habits.tasks.check_and_send_reminders',
+        'schedule': crontab(minute='*'),  # Каждую минуту
+    },
+}
