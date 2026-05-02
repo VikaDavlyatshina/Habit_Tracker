@@ -1,5 +1,8 @@
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
+
+from habits.validators import validate_duration, validate_period
 
 
 class Habit(models.Model):
@@ -85,7 +88,8 @@ class Habit(models.Model):
     period = models.IntegerField(
         default=1,  # По умолчанию — каждый день
         verbose_name='Периодичность (дни)',
-        help_text='Через сколько дней повторять привычку. От 1 (каждый день) до 7 (раз в неделю)'
+        help_text='Через сколько дней повторять привычку. От 1 (каждый день) до 7 (раз в неделю)',
+        validators=[validate_period]
     )
 
     # ============================================
@@ -94,7 +98,6 @@ class Habit(models.Model):
     reward = models.CharField(
         max_length=255,
         blank=True,  # Можно не заполнять (если выбрана related_habit)
-        null=True,  # В базе может быть NULL
         verbose_name='Вознаграждение',
         help_text=(
             'Чем наградить себя за выполнение (например, "Съесть десерт"). '
@@ -107,7 +110,8 @@ class Habit(models.Model):
     # ============================================
     duration = models.IntegerField(
         verbose_name='Время выполнения (секунды)',
-        help_text='Сколько секунд выполнять привычку. Максимум 120 секунд (2 минуты)'
+        help_text='Сколько секунд выполнять привычку. Максимум 120 секунд (2 минуты)',
+        validators = [validate_duration]
     )
 
     # ============================================
@@ -117,6 +121,13 @@ class Habit(models.Model):
         default=False,  # По умолчанию привычка — личная
         verbose_name='Публичная',
         help_text='Если отмечено — другие пользователи увидят эту привычку в общем списке'
+    )
+    # Дата последней отправки напоминания
+    last_sent = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name='Дата последней отправки',
+        help_text='Когда в последний раз отправляли напоминание'
     )
 
     # ============================================
@@ -130,6 +141,53 @@ class Habit(models.Model):
         auto_now=True,  # Автоматически обновляется при каждом сохранении
         verbose_name='Обновлена'
     )
+
+    def clean(self):
+        """
+        Проверка бизнес-логики.
+        Вызывается автоматически при каждом сохранении привычки.
+        """
+        errors = {}  # Словарь для сбора ошибок
+
+        # Правило 1: Нельзя одновременно связанную привычку и вознаграждение
+        if self.related_habit and self.reward:
+            errors['related_habit'] = (
+                'Нельзя выбрать одновременно связанную привычку и вознаграждение'
+            )
+            errors['reward'] = (
+                'Нельзя выбрать одновременно связанную привычку и вознаграждение'
+            )
+
+        # Правило 2: Привычка не может ссылаться сама на себя
+        if self.related_habit and self.related_habit == self:
+            errors['related_habit'] = 'Привычка не может ссылаться сама на себя'
+
+        # Правило 3: Можно выбирать только свои привычки в качестве награды
+        if self.related_habit and self.related_habit.user != self.user:
+            errors['related_habit'] = 'Можно выбирать только свои привычки'
+
+        # Правило 4: Связанная привычка должна быть приятной
+        if self.related_habit and not self.related_habit.is_pleasant:
+            errors['related_habit'] = 'Связанная привычка должна быть приятной'
+
+        # Правило 5: Приятная привычка не может иметь наград
+        if self.is_pleasant:
+            if self.reward:
+                errors['reward'] = 'У приятной привычки не может быть вознаграждения'
+            if self.related_habit:
+                errors['related_habit'] = 'У приятной привычки не может быть связанной привычки'
+
+        # Если есть ошибки — прерываем сохранение
+        if errors:
+            raise ValidationError(errors)
+
+    def save(self, *args, **kwargs):
+        """
+        Сохранение с проверкой.
+        full_clean() вызывает clean() — проверяет бизнес-логику.
+        """
+        self.full_clean()
+        super().save(*args, **kwargs)
 
     # ============================================
     # МЕТА-НАСТРОЙКИ (как модель отображается)
@@ -145,3 +203,4 @@ class Habit(models.Model):
     def __str__(self):
         prefix = 'Приятная' if self.is_pleasant else 'Полезная'
         return f'{prefix}: {self.action} в {self.time} ({self.place})'
+
