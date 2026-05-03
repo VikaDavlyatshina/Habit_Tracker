@@ -1,11 +1,20 @@
 from django.shortcuts import render
-from rest_framework import status
+from drf_spectacular.utils import extend_schema_view, extend_schema
+from rest_framework import status, generics, permissions
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
+from users.models import User
+from users.serializers import UserCreateSerializer
 
 
 # Create your views here.
 
+@extend_schema(
+    summary="Привязать Telegram",
+    description="Сохраняет chat_id пользователя для отправки уведомлений о привычках.",
+    tags=["users"],
+)
 class LinkTelegramView(APIView):
     """ Привязка Телеграм """
 
@@ -21,3 +30,4 @@ class LinkTelegramView(APIView):
             'status': 'updated',
             'telegram_chat_id': chat_id
         })
+

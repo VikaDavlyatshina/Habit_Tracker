@@ -1,3 +1,4 @@
+from drf_spectacular.utils import extend_schema_view, extend_schema
 from rest_framework import viewsets, generics, permissions
 from .models import Habit
 from .serializers import HabitSerializer, PublicHabitSerializer
@@ -5,6 +6,34 @@ from .permissions import IsOwner
 from .paginators import HabitPagination
 
 
+
+@extend_schema_view(
+    list=extend_schema(
+        summary="Список моих привычек",
+        description="Возвращает привычки текущего пользователя с пагинацией по 5 штук.",
+        responses={200: HabitSerializer(many=True)},
+        tags=["habits"],
+    ),
+    create=extend_schema(
+        summary="Создать привычку",
+        description="Создаёт новую привычку. Пользователь назначается автоматически.",
+        request=HabitSerializer,
+        responses={201: HabitSerializer},
+        tags=["habits"],
+    ),
+    retrieve=extend_schema(
+        summary="Просмотр привычки",
+        tags=["habits"],
+    ),
+    update=extend_schema(
+        summary="Обновить привычку",
+        tags=["habits"],
+    ),
+    destroy=extend_schema(
+        summary="Удалить привычку",
+        tags=["habits"],
+    ),
+)
 class HabitViewSet(viewsets.ModelViewSet):
     """
     ViewSet для CRUD-операций с привычками пользователя.
@@ -54,7 +83,15 @@ class HabitViewSet(viewsets.ModelViewSet):
         # user=self.request.user — привязываем к тому, кто делает запрос
         serializer.save(user=self.request.user)
 
-
+@extend_schema_view(
+    get=extend_schema(
+        summary="Публичный список привычек",
+        description="Возвращает список привычек, у которых is_public=True. Доступно неавторизованным пользователям",
+        request=PublicHabitSerializer,
+        responses={200: PublicHabitSerializer(many=True)},
+        tags=["habits"],
+    )
+)
 class PublicHabitListView(generics.ListAPIView):
     """
     Публичный список привычек.
