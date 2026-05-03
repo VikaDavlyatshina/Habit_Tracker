@@ -1599,6 +1599,18 @@ files = [
 dev = ["black", "build", "mypy", "pytest", "pytest-cov", "setuptools", "tox", "twine", "wheel"]
 
 [[package]]
+name = "pytz"
+version = "2026.1.post1"
+description = "World timezone definitions, modern and historical"
+optional = false
+python-versions = "*"
+groups = ["main"]
+files = [
+    {file = "pytz-2026.1.post1-py2.py3-none-any.whl", hash = "sha256:f2fd16142fda348286a75e1a524be810bb05d444e5a081f37f7affc635035f7a"},
+    {file = "pytz-2026.1.post1.tar.gz", hash = "sha256:3378dde6a0c3d26719182142c56e60c7f9af7e968076f31aae569d72a0358ee1"},
+]
+
+[[package]]
 name = "pyyaml"
 version = "6.0.3"
 description = "YAML parser and emitter for Python"
@@ -2015,4 +2027,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.13"
-content-hash = "8327e13f50d09f6004eaec476816212a67c83b58b52591eb7966ffecd3379a9d"
+content-hash = "7a76cdebf4640bd21f124306dea080b3f7e80285b0470ae8be2835c5e5e21a2a"

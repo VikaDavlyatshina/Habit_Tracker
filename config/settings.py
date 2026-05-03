@@ -137,7 +137,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = "en-us"
 
 # Часовой пояс (влияет на auto_now_add, даты в админке)
-TIME_ZONE = "Europe/Moscow"
+TIME_ZONE = os.getenv("TIME_ZONE", "Europe/Moscow")
 
 # Интернационализация (переводы на другие языки)
 USE_I18N = True
