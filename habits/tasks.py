@@ -2,6 +2,7 @@ import requests
 from celery import shared_task
 from django.conf import settings
 from django.utils import timezone
+
 from habits.models import Habit
 
 
@@ -35,10 +36,11 @@ def check_and_send_reminders():
         _send_telegram_message(habit.user.telegram_chat_id, _format_message(habit))
 
         habit.last_sent = today
-        habit.save(update_fields=['last_sent'])
+        habit.save(update_fields=["last_sent"])
         sent_count += 1
 
     return f"Отправлено {sent_count} напоминаний"
+
 
 def _should_send_today(habit, today):
     """
@@ -84,8 +86,8 @@ def _send_telegram_message(chat_id, text):
     try:
         requests.post(
             url,
-            data={'chat_id': chat_id, 'text': text},
-            timeout=10  # Ждём не больше 10 секунд
+            data={"chat_id": chat_id, "text": text},
+            timeout=10,  # Ждём не больше 10 секунд
         )
     except requests.RequestException:
         pass  # Ошибка сети или Telegram API — пропускаем, не ломаем задачу
