@@ -1,12 +1,13 @@
 from drf_spectacular.types import OpenApiTypes
-from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
+from drf_spectacular.utils import (OpenApiResponse, extend_schema,
+                                   extend_schema_view)
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from users.models import User
-from users.serializers import UserCreateSerializer, UserSerializer, TelegramLinkSerializer
-
+from users.serializers import (TelegramLinkSerializer, UserCreateSerializer,
+                               UserSerializer)
 
 # Create your views here.
 

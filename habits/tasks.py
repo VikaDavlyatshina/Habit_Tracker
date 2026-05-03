@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import date, datetime
 
 import requests
 from celery import shared_task
@@ -65,10 +65,8 @@ def _format_message(habit):
 
     # Переводим время в московское (или любой другой TIME_ZONE из settings)
     local_time = timezone.localtime(
-        timezone.make_aware(
-            datetime.combine(date.today(), habit.time)
-        )
-    ).strftime('%H:%M')
+        timezone.make_aware(datetime.combine(date.today(), habit.time))
+    ).strftime("%H:%M")
 
     text = (
         f"{emoji} Напоминание о привычке!\n\n"
