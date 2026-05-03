@@ -17,10 +17,13 @@ from pathlib import Path
 from celery.schedules import crontab
 from dotenv import load_dotenv
 
+# Локально читаем .env, в Docker переменные уже загружены через env_file
+if not os.path.exists("/.dockerenv"):
+    load_dotenv(".env", override=True)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-load_dotenv(".env", override=True)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
