@@ -1,3 +1,5 @@
+from datetime import datetime, date
+
 import requests
 from celery import shared_task
 from django.conf import settings
@@ -58,12 +60,20 @@ def _should_send_today(habit, today):
 
 def _format_message(habit):
     """Форматирует текст уведомления для Telegram."""
+
     emoji = "🎁" if habit.is_pleasant else "🎯"
+
+    # Переводим время в московское (или любой другой TIME_ZONE из settings)
+    local_time = timezone.localtime(
+        timezone.make_aware(
+            datetime.combine(date.today(), habit.time)
+        )
+    ).strftime('%H:%M')
 
     text = (
         f"{emoji} Напоминание о привычке!\n\n"
         f"📍 Место: {habit.place}\n"
-        f"⏰ Время: {habit.time.strftime('%H:%M')}\n"
+        f"⏰ Время: {local_time}\n"
         f"📋 Действие: {habit.action}\n"
         f"⏱ Длительность: {habit.duration // 60} мин."
     )
