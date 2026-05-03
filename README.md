@@ -29,8 +29,10 @@ API для трекера полезных привычек. Пользоват�
 
 #### 1. Клонируйте репозиторий:
 
+- Ссылка на репозиторий: https://github.com/VikaDavlyatshina/Habit_Tracker
+
 ```bash
-git clone https://github.com/VikaDavlyatshina/Habit_Tracker
+git clone https://github.com/VikaDavlyatshina/Habit_Tracker HabitTracker
 ```
 
 #### 2. Перейдите в папку проекта
