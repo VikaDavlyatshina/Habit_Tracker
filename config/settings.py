@@ -239,9 +239,13 @@ CORS_ALLOW_CREDENTIALS = True
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "Habit Tracker API",  # Название API
-    "DESCRIPTION": "API для управления полезными привычками",  # Описание
+    "DESCRIPTION": "API для трекера полезных привычек с Telegram-уведомлениями.",  # Описание
     "VERSION": "1.0.0",  # Версия API
     "SERVE_INCLUDE_SCHEMA": False,  # Не показывать схему в ответах API
+    "TAGS": [
+        {"name": "habits", "description": "Управление привычками"},
+        {"name": "users", "description": "Пользователи, авторизация и Telegram"},
+    ],
 }
 
 # ============================================
