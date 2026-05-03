@@ -36,3 +36,7 @@ static/
 # OS
 .DS_Store
 Thumbs.db
+
+.coverage
+htmlcov/
+dump.rdb
