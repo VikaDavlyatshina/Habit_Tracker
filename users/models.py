@@ -30,7 +30,7 @@ class UserManager(BaseUserManager):
 
 
 class User(AbstractUser):
-    """Кастомная модель пользователя """
+    """Кастомная модель пользователя"""
 
     username = None
 
@@ -39,10 +39,7 @@ class User(AbstractUser):
     )
 
     telegram_chat_id = models.BigIntegerField(
-        null=True,
-        blank=True,
-        unique=True,
-        verbose_name='Telegram Chat ID'
+        null=True, blank=True, unique=True, verbose_name="Telegram Chat ID"
     )
 
     avatar = models.ImageField(
@@ -59,8 +56,8 @@ class User(AbstractUser):
     objects = UserManager()
 
     class Meta:
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
 
     def __str__(self):
         return self.email
@@ -69,4 +66,4 @@ class User(AbstractUser):
         """Имя для отображения."""
         if self.first_name:
             return self.first_name
-        return self.email.split('@')[0]
+        return self.email.split("@")[0]

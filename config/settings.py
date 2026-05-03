@@ -10,79 +10,83 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-from pathlib import Path
 import os
-from dotenv import load_dotenv
 from datetime import timedelta
+from pathlib import Path
+
 from celery.schedules import crontab
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-load_dotenv('.env', override=True)
+load_dotenv(".env", override=True)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True if os.getenv("DEBUG") == "True" else False
 
 # Разрешенные хосты
 # Какие домены/IP могут обращаться к сайту
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-     # Сторонние библиотеки
-    'rest_framework',
-    'rest_framework_simplejwt',
-    'django_filters',
-    'django_celery_beat',
-    'drf_spectacular',
+    # Стандартные приложения Django
+    "django.contrib.admin",  # Админ-панель (yourdomain.ru/admin/)
+    "django.contrib.auth",  # Пользователи, группы, права доступа
+    "django.contrib.contenttypes",  # Связи между моделями (служебное)
+    "django.contrib.sessions",  # Хранение сессий пользователей
+    "django.contrib.messages",  # Всплывающие сообщения (успех, ошибка)
+    "django.contrib.staticfiles",  # Работа со статикой (CSS, JS, картинки)
+    # Сторонние библиотеки
+    "rest_framework",  # Django REST Framework — создание API
+    "rest_framework_simplejwt",  # JWT-токены для безопасной авторизации через API
+    "django_filters",  # Фильтрация данных в API (поиск, сортировка)
+    "django_celery_beat",  # Планировщик задач Celery (периодические задачи)
+    "drf_spectacular",  # Современная автодокументация API (OpenAPI 3.0)
+    "corsheaders",  # Разрешает запросы к API с других доменов (нужно для фронтенда)
     # Приложения проекта
-    'habits',
-    'users'
+    "habits",
+    "users",
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'config.urls'
+ROOT_URLCONF = "config.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates'],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [BASE_DIR / "templates"],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'config.wsgi.application'
+WSGI_APPLICATION = "config.wsgi.application"
 
 
 # Database
@@ -180,7 +184,6 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-
     # Доступ по умолчанию: только авторизованные пользователи
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
@@ -196,25 +199,46 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     # Access-токен: короткий (30 минут), передаётся с каждым запросом
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
-
     # Refresh-токен: длинный (1 день), нужен чтобы получить новый access
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
-
     # Тип токена в заголовке: Authorization: Bearer <токен>
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
+
+# ============================================
+# TELEGRAM TOKEN
+# ============================================
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+
+
+# ============================================
+# CORS (Cross-Origin Resource Sharing)
+# ============================================
+
+# Разрешённые домены для запросов к API
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React / Vue фронтенд локально
+    "http://127.0.0.1:3000",  # Тоже самое через 127.0.0.1
+    "http://localhost:8000",  # Swagger-документация
+]
+
+# Запрет запросов отовсюду (разрешены только из списка выше)
+CORS_ALLOW_ALL_ORIGINS = False
+
+# Разрешить передачу авторизационных заголовков (JWT-токенов)
+CORS_ALLOW_CREDENTIALS = True
+
 
 # ============================================
 # НАСТРОЙКИ ДОКУМЕНТАЦИИ API (Swagger/OpenAPI)
 # ============================================
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "Habit Tracker API",                          # Название API
-    "DESCRIPTION": "API для управления привычками",  # Описание
-    "VERSION": "1.0.0",                          # Версия API
-    "SERVE_INCLUDE_SCHEMA": False,               # Не показывать схему в ответах API
+    "TITLE": "Habit Tracker API",  # Название API
+    "DESCRIPTION": "API для управления полезными привычками",  # Описание
+    "VERSION": "1.0.0",  # Версия API
+    "SERVE_INCLUDE_SCHEMA": False,  # Не показывать схему в ответах API
 }
 
 # ============================================
@@ -252,8 +276,8 @@ CELERY_BEAT_SCHEDULER = "django_celery_beat.schedulers:DatabaseScheduler"
 # Настройка расписания задачи
 CELERY_BEAT_SCHEDULE = {
     # Проверяем привычки каждую минуту
-    'check-habits-every-minute': {
-        'task': 'habits.tasks.check_and_send_reminders',
-        'schedule': crontab(minute='*'),  # Каждую минуту
+    "check-habits-every-minute": {
+        "task": "habits.tasks.check_and_send_reminders",
+        "schedule": crontab(minute="*"),  # Каждую минуту
     },
 }

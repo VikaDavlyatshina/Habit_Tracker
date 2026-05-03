@@ -1,10 +1,10 @@
-from drf_spectacular.utils import extend_schema_view, extend_schema
-from rest_framework import viewsets, generics, permissions
-from .models import Habit
-from .serializers import HabitSerializer, PublicHabitSerializer
-from .permissions import IsOwner
-from .paginators import HabitPagination
+from drf_spectacular.utils import extend_schema, extend_schema_view
+from rest_framework import generics, permissions, viewsets
 
+from .models import Habit
+from .paginators import HabitPagination
+from .permissions import IsOwner
+from .serializers import HabitSerializer, PublicHabitSerializer
 
 
 @extend_schema_view(
@@ -83,6 +83,7 @@ class HabitViewSet(viewsets.ModelViewSet):
         # user=self.request.user — привязываем к тому, кто делает запрос
         serializer.save(user=self.request.user)
 
+
 @extend_schema_view(
     get=extend_schema(
         summary="Публичный список привычек",
@@ -114,4 +115,4 @@ class PublicHabitListView(generics.ListAPIView):
         Возвращает только те, у которых is_public=True.
         Сортируем по дате создания — сначала новые.
         """
-        return Habit.objects.filter(is_public=True).order_by('-created_at')
+        return Habit.objects.filter(is_public=True).order_by("-created_at")

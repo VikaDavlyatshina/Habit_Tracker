@@ -1,14 +1,13 @@
-from django.shortcuts import render
-from drf_spectacular.utils import extend_schema_view, extend_schema
-from rest_framework import status, generics, permissions
+from drf_spectacular.utils import extend_schema, extend_schema_view
+from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from users.models import User
 from users.serializers import UserCreateSerializer, UserSerializer
 
-
 # Create your views here.
+
 
 @extend_schema(
     summary="Привязать Telegram",
@@ -16,20 +15,21 @@ from users.serializers import UserCreateSerializer, UserSerializer
     tags=["users"],
 )
 class LinkTelegramView(APIView):
-    """ Привязка Телеграм """
+    """Привязка Телеграм"""
 
     def post(self, request):
-        chat_id = request.data.get('telegram_chat_id')
+        chat_id = request.data.get("telegram_chat_id")
         if not chat_id:
-            return Response({'error': 'Не указан telegram_chat_id'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                {"error": "Не указан telegram_chat_id"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         request.user.telegram_chat_id = chat_id
         request.user.save()
 
-        return Response({
-            'status': 'updated',
-            'telegram_chat_id': chat_id
-        })
+        return Response({"status": "updated", "telegram_chat_id": chat_id})
+
 
 @extend_schema_view(
     post=extend_schema(
@@ -57,7 +57,7 @@ class UserCreateAPIView(generics.CreateAPIView):
     delete=extend_schema(summary="Удалить профиль", tags=["users"]),
 )
 class UserProfileView(generics.RetrieveUpdateDestroyAPIView):
-    """ Просмотр, редактирование и удаление своего профиля """
+    """Просмотр, редактирование и удаление своего профиля"""
 
     serializer_class = UserSerializer
 
