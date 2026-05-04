@@ -73,7 +73,7 @@ def _format_message(habit):
     utc_time = pytz.UTC.localize(utc_time)
 
     # Переводим в часовой пояс из настроек
-    local_time = utc_time.astimezone(tz).strftime('%H:%M')
+    local_time = utc_time.astimezone(tz).strftime("%H:%M")
 
     text = (
         f"{emoji} Напоминание о привычке!\n\n"
