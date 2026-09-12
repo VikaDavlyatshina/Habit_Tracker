@@ -1,0 +1,18 @@
+[run]
+source = .
+omit =
+    */__init__.py
+    */apps.py
+    */migrations/*
+    */admin.py
+    manage.py
+    config/asgi.py
+    config/wsgi.py
+    config/celery.py
+    config/settings.py
+    */tests.py
+    */tasks.py
+    users/models.py
+
+[report]
+show_missing = True
