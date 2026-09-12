@@ -1,10 +1,13 @@
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import (OpenApiResponse, extend_schema,
+                                   extend_schema_view)
 from rest_framework import generics, permissions, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from users.models import User
-from users.serializers import UserCreateSerializer, UserSerializer
+from users.serializers import (TelegramLinkSerializer, UserCreateSerializer,
+                               UserSerializer)
 
 # Create your views here.
 
@@ -12,6 +15,11 @@ from users.serializers import UserCreateSerializer, UserSerializer
 @extend_schema(
     summary="Привязать Telegram",
     description="Сохраняет chat_id пользователя для отправки уведомлений о привычках.",
+    request=TelegramLinkSerializer,
+    responses={
+        200: OpenApiResponse(response=OpenApiTypes.OBJECT, description="Успешно"),
+        400: OpenApiResponse(description="Не указан telegram_chat_id"),
+    },
     tags=["users"],
 )
 class LinkTelegramView(APIView):

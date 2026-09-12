@@ -1,3 +1,6 @@
+from datetime import date, datetime
+
+import pytz
 import requests
 from celery import shared_task
 from django.conf import settings
@@ -60,15 +63,26 @@ def _format_message(habit):
     """Форматирует текст уведомления для Telegram."""
     emoji = "🎁" if habit.is_pleasant else "🎯"
 
+    # Берём часовой пояс из настроек Django (Europe/Moscow)
+    tz = pytz.timezone(settings.TIME_ZONE)
+
+    # Берём время привычки (UTC), добавляем сегодняшнюю дату
+    utc_time = datetime.combine(date.today(), habit.time)
+
+    # Говорим Django: «Это время в UTC»
+    utc_time = pytz.UTC.localize(utc_time)
+
+    # Переводим в часовой пояс из настроек
+    local_time = utc_time.astimezone(tz).strftime("%H:%M")
+
     text = (
         f"{emoji} Напоминание о привычке!\n\n"
         f"📍 Место: {habit.place}\n"
-        f"⏰ Время: {habit.time.strftime('%H:%M')}\n"
+        f"⏰ Время: {local_time}\n"
         f"📋 Действие: {habit.action}\n"
         f"⏱ Длительность: {habit.duration // 60} мин."
     )
 
-    # Награда показывается только если есть
     if habit.reward:
         text += f"\n🏆 Награда: {habit.reward}"
 

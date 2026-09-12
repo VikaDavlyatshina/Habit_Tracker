@@ -1,3 +1,8 @@
+# Чтобы poetry устанавливал только зависимости
+[tool.poetry]
+package-mode = false
+
+
 [project]
 name = "habittracker"
 version = "0.1.0"
@@ -24,7 +29,9 @@ dependencies = [
     "drf-spectacular (>=0.29.0,<0.30.0)",
     "pillow (>=12.2.0,<13.0.0)",
     "django-cors-headers (>=4.9.0,<5.0.0)",
-    "coverage (>=7.13.5,<8.0.0)"
+    "coverage (>=7.13.5,<8.0.0)",
+    "gunicorn (>=25.3.0,<26.0.0)",
+    "pytz (>=2026.1.post1,<2027.0)"
 ]
 
 

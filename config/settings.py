@@ -17,10 +17,13 @@ from pathlib import Path
 from celery.schedules import crontab
 from dotenv import load_dotenv
 
+# Локально читаем .env, в Docker переменные уже загружены через env_file
+if not os.path.exists("/.dockerenv"):
+    load_dotenv(".env", override=True)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-load_dotenv(".env", override=True)
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
@@ -134,7 +137,7 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = "en-us"
 
 # Часовой пояс (влияет на auto_now_add, даты в админке)
-TIME_ZONE = "Europe/Moscow"
+TIME_ZONE = os.getenv("TIME_ZONE", "Europe/Moscow")
 
 # Интернационализация (переводы на другие языки)
 USE_I18N = True
@@ -236,9 +239,13 @@ CORS_ALLOW_CREDENTIALS = True
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "Habit Tracker API",  # Название API
-    "DESCRIPTION": "API для управления полезными привычками",  # Описание
+    "DESCRIPTION": "API для трекера полезных привычек с Telegram-уведомлениями.",  # Описание
     "VERSION": "1.0.0",  # Версия API
     "SERVE_INCLUDE_SCHEMA": False,  # Не показывать схему в ответах API
+    "TAGS": [
+        {"name": "habits", "description": "Управление привычками"},
+        {"name": "users", "description": "Пользователи, авторизация и Telegram"},
+    ],
 }
 
 # ============================================
@@ -281,3 +288,13 @@ CELERY_BEAT_SCHEDULE = {
         "schedule": crontab(minute="*"),  # Каждую минуту
     },
 }
+
+
+# ============================================
+# CSRF (доверенные источники для админки)
+# ============================================
+CSRF_TRUSTED_ORIGINS = [
+    "http://89.169.174.52",  # LMS
+    "http://89.169.174.52:8080",  # Habit Tracker
+    "http://127.0.0.1:8080",  # Локально через Docker
+]

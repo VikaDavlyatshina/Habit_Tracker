@@ -88,7 +88,6 @@ class HabitViewSet(viewsets.ModelViewSet):
     get=extend_schema(
         summary="Публичный список привычек",
         description="Возвращает список привычек, у которых is_public=True. Доступно неавторизованным пользователям",
-        request=PublicHabitSerializer,
         responses={200: PublicHabitSerializer(many=True)},
         tags=["habits"],
     )

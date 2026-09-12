@@ -47,3 +47,9 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ["id", "email", "first_name", "last_name", "avatar"]
         read_only_fields = ["id", "email"]
+
+
+class TelegramLinkSerializer(serializers.Serializer):
+    """Сериализатор для добавления Telegram ID"""
+
+    telegram_chat_id = serializers.IntegerField()

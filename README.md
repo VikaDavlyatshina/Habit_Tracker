@@ -15,6 +15,8 @@ API для трекера полезных привычек. Пользоват�
 - Celery + Celery Beat
 - JWT (Simple JWT)
 - Telegram Bot API
+- Docker + Docker Compose
+- Gunicorn
 
 ## Установка и запуск
 
@@ -80,18 +82,27 @@ celery -A config worker -l info -P eventlet
 celery -A config beat -l info
 ```
 
-## Документация
+## Запуск через Docker
 
-- Swagger: http://localhost:8000/api/docs/
-- Redoc: http://localhost:8000/api/redoc/
+1. Убедитесь, что Docker Desktop запущен
 
-## Тесты
+2. Создайте файл с настройками:
+```bash
+cp .env.template .env
+```
+3. Запустите все сервисы:
 
 ```bash
-python manage.py test
+docker compose up -d --build
 ```
+4. Откройте сайт: http://localhost:8080
 
-Покрытие: 85%+ (отчёт: coverage_report.txt)
+
+## Доступ
+
+- Админка: [http://89.169.174.52:8080/admin/](http://89.169.174.52:8080/admin/)
+- API: [http://89.169.174.52:8080/api/habits/](http://89.169.174.52:8080/api/habits/)
+- Swagger: [http://89.169.174.52:8080/api/docs/](http://89.169.174.52:8080/api/docs/)
 
 ## API
 
@@ -109,6 +120,57 @@ python manage.py test
 - `POST /api/habits/` — создать привычку (авторизованным)
 - `GET/PUT/DELETE /api/habits/{id}/` — просмотр/обновить/удалить (авторизованным)
 - `GET /api/habits/public/` — публичные привычки (доступ всем)
+
+
+## Документация
+
+- Swagger (локально): http://localhost:8000/api/docs/
+- Swagger (Docker): http://localhost:8080/api/docs/
+- Redoc: http://localhost:8000/api/redoc/
+- Redoc (Docker): http://localhost:8080/api/redoc/
+
+## Тесты
+
+```bash
+python manage.py test
+```
+
+Покрытие: 85%+ (отчёт: coverage_report.txt)
+
+
+## Проверка работы
+
+### Статус контейнеров (Docker)
+
+```bash
+docker compose ps
+```
+
+Все сервисы должны быть в статусе Up.
+
+### Redis (Docker)
+
+```bash
+docker compose exec redis redis-cli PING
+```
+
+Ожидаемый ответ: PONG
+
+## CI/CD
+
+#### Проект автоматически деплоится на сервер при каждом `push` в репозиторий через GitHub Actions. 
+
+**Пайплайн включает:**
+
+ - Линтинг (Flake8)
+
+ - Тесты
+
+ - Сборку Docker-образа
+
+ - Публикацию в Docker Hub
+
+ - Деплой на сервер
 
 ## 👤 Автор
 
